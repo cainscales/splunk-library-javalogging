@@ -102,7 +102,8 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
             final String Url, final String token, final String channel, final String type,
             long delay, long maxEventsBatchCount, long maxEventsBatchSize,
             String sendModeStr,
-            Map<String, String> metadata, TimeoutSettings timeoutSettings) {
+            Map<String, String> metadata, TimeoutSettings timeoutSettings,
+            HttpEventCollectorSslConfiguration sslConfiguration) {
         this.token = token;
         this.channel = channel;
         this.type = type;
@@ -386,6 +387,7 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
                 }
             });
         }
+
 
         httpClient = builder.build();
     }

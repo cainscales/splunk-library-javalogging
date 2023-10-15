@@ -22,9 +22,12 @@ import ch.qos.logback.classic.spi.IThrowableProxy;
 import ch.qos.logback.classic.spi.StackTraceElementProxy;
 import ch.qos.logback.core.AppenderBase;
 import ch.qos.logback.core.Layout;
+import ch.qos.logback.core.net.ssl.SSLConfiguration;
 import com.google.gson.Gson;
 import com.splunk.logging.hec.MetadataTags;
 
+import java.security.*;
+import java.security.cert.CertificateException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -39,6 +42,8 @@ public class HttpEventCollectorLogbackAppender<E> extends AppenderBase<E> {
     private boolean _includeThreadName = true;
     private boolean _includeMDC = true;
     private boolean _includeException = true;
+
+    private SSLConfiguration _ssl = null;
 
     private String _source;
     private String _sourcetype;
@@ -92,8 +97,25 @@ public class HttpEventCollectorLogbackAppender<E> extends AppenderBase<E> {
             throw new IllegalArgumentException("Batching configuration and sending type of raw are incompatible.");
         }
 
+        HttpEventCollectorSslConfiguration httpEventCollectorSslConfiguration = null;
+
+        if (this._ssl != null) {
+            try {
+                httpEventCollectorSslConfiguration = new HttpEventCollectorSslConfiguration(
+                        this._ssl.createContext(this).getSocketFactory(),
+                        this._ssl.getTrustManagerFactory().createTrustManagerFactory().getTrustManagers()[0]
+                );
+            } catch (UnrecoverableKeyException e) {
+            } catch (CertificateException e) {
+            } catch (NoSuchAlgorithmException e) {
+            } catch (KeyStoreException e) {
+            } catch (NoSuchProviderException e) {
+            } catch (KeyManagementException e) {
+            }
+        }
+
         this.sender = new HttpEventCollectorSender(
-                _url, _token, _channel, _type, _batchInterval, _batchCount, _batchSize, _sendMode, metadata, timeoutSettings);
+                _url, _token, _channel, _type, _batchInterval, _batchCount, _batchSize, _sendMode, metadata, timeoutSettings, httpEventCollectorSslConfiguration);
 
         // plug a user middleware
         if (_middleware != null && !_middleware.isEmpty()) {
@@ -449,6 +471,14 @@ public class HttpEventCollectorLogbackAppender<E> extends AppenderBase<E> {
 
     public long getTerminationTimeout(long milliseconds) {
         return this.timeoutSettings.terminationTimeout = milliseconds;
+    }
+
+    public void setSsl(SSLConfiguration ssl) { this._ssl = ssl; }
+    public SSLConfiguration getSsl() {
+        if (this._ssl == null) {
+            return new SSLConfiguration();
+        }
+        return this._ssl;
     }
 
     private static long parseLong(String string, int defaultValue) {

@@ -29,9 +29,12 @@ import org.apache.logging.log4j.core.config.plugins.PluginElement;
 import org.apache.logging.log4j.core.config.plugins.PluginFactory;
 import org.apache.logging.log4j.core.impl.MutableLogEvent;
 import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.apache.logging.log4j.core.net.ssl.SslConfiguration;
 
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -79,7 +82,8 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
                                             final String disableCertificateValidation,
                                             final String eventBodySerializer,
                                             final String eventHeaderSerializer,
-                                            HttpEventCollectorSender.TimeoutSettings timeoutSettings)
+                                            HttpEventCollectorSender.TimeoutSettings timeoutSettings,
+                                            SslConfiguration sslConfiguration)
     {
         super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
         Map<String, String> metadata = new HashMap<>();
@@ -88,8 +92,22 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
         metadata.put(MetadataTags.SOURCE, source != null ? source : "");
         metadata.put(MetadataTags.SOURCETYPE, sourcetype != null ? sourcetype : "");
         metadata.put(MetadataTags.MESSAGEFORMAT, messageFormat != null ? messageFormat : "");
+        HttpEventCollectorSslConfiguration httpEventCollectorSslConfiguration = null;
+        if (sslConfiguration != null) {
+            try {
+                httpEventCollectorSslConfiguration = new HttpEventCollectorSslConfiguration(
+                        sslConfiguration.getSslSocketFactory(),
+                        sslConfiguration.getTrustStoreConfig().initTrustManagerFactory().getTrustManagers()[0]
+                );
+            } catch (NoSuchAlgorithmException e) {
 
-        this.sender = new HttpEventCollectorSender(url, token, channel, type, batchInterval, batchCount, batchSize, sendMode, metadata, timeoutSettings);
+            } catch (KeyStoreException e) {
+
+            }
+
+        }
+
+        this.sender = new HttpEventCollectorSender(url, token, channel, type, batchInterval, batchCount, batchSize, sendMode, metadata, timeoutSettings, httpEventCollectorSslConfiguration);
 
         // plug a user middleware
         if (middleware != null && !middleware.isEmpty()) {
@@ -165,8 +183,9 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
             @PluginAttribute(value = "write_timeout", defaultLong = HttpEventCollectorSender.TimeoutSettings.DEFAULT_WRITE_TIMEOUT) final long writeTimeout,
             @PluginAttribute(value = "termination_timeout", defaultLong = HttpEventCollectorSender.TimeoutSettings.DEFAULT_TERMINATION_TIMEOUT) final long terminationTimeout,
             @PluginElement("Layout") Layout<? extends Serializable> layout,
-            @PluginElement("Filter") final Filter filter
-    )
+            @PluginElement("Filter") final Filter filter,
+            @PluginElement("SSL") final SslConfiguration sslConfiguration
+            )
     {
         // The raw endpoint presumes that a single post is a single event.
         // The batch size should be 1 if "type" is raw, and we should error if batch
@@ -230,7 +249,8 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
                 disableCertificateValidation,
                 eventBodySerializer,
                 eventHeaderSerializer,
-                new HttpEventCollectorSender.TimeoutSettings(connectTimeout, callTimeout, readTimeout, writeTimeout, terminationTimeout)
+                new HttpEventCollectorSender.TimeoutSettings(connectTimeout, callTimeout, readTimeout, writeTimeout, terminationTimeout),
+                sslConfiguration
         );
     }
 

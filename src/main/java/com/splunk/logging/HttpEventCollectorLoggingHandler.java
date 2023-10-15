@@ -184,7 +184,7 @@ public final class HttpEventCollectorLoggingHandler extends Handler {
 
         // delegate all configuration params to event sender
         this.sender = new HttpEventCollectorSender(
-                url, token, channel, type, delay, batchCount, batchSize, sendMode, metadata, timeoutSettings);
+                url, token, channel, type, delay, batchCount, batchSize, sendMode, metadata, timeoutSettings, null);
 
         // plug a user middleware
         if (middleware != null && !middleware.isEmpty()) {
