@@ -99,10 +99,8 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
                         sslConfiguration.getSslSocketFactory(),
                         sslConfiguration.getTrustStoreConfig().initTrustManagerFactory().getTrustManagers()[0]
                 );
-            } catch (NoSuchAlgorithmException e) {
-
-            } catch (KeyStoreException e) {
-
+            } catch (final Exception e) {
+                LOGGER.error(e.getMessage());
             }
 
         }

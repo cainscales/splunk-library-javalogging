@@ -86,6 +86,7 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
     private boolean disableCertificateValidation = false;
     private SendMode sendMode = SendMode.Sequential;
     private HttpEventCollectorMiddleware middleware = new HttpEventCollectorMiddleware();
+    private final HttpEventCollectorSslConfiguration ssl;
 
     /**
      * Initialize HttpEventCollectorSender
@@ -107,6 +108,8 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
         this.token = token;
         this.channel = channel;
         this.type = type;
+        this.ssl = sslConfiguration;
+
         if (timeoutSettings != null) {
             this.timeoutSettings = timeoutSettings;
         }
@@ -353,7 +356,7 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
         
         builder.dispatcher(dispatcher);
 
-        if (disableCertificateValidation) {
+        if (disableCertificateValidation && this.ssl == null) {
             final TrustManager[] trustAllCerts = new TrustManager[]{
                     new X509TrustManager() {
                         @Override
@@ -386,6 +389,14 @@ public class HttpEventCollectorSender extends TimerTask implements HttpEventColl
                     return true;
                 }
             });
+        }
+        else if (this.ssl != null) {
+            try {
+                builder.sslSocketFactory(this.ssl.sslSocketFactory, (X509TrustManager) this.ssl.trustManager);
+            }
+            catch (Exception ignore) {
+
+            }
         }
 
 
