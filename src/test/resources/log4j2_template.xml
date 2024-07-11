@@ -13,13 +13,15 @@
               batch_interval="%user_batch_interval%"
               batch_size_bytes="%user_batch_size_bytes%"
               batch_size_count="%user_batch_size_count%"
-              disableCertificateValidation="true"
+              disableCertificateValidation="%user_disableCertValidation%"
               send_mode="%user_send_mode%"
               middleware="%user_middleware%"
               eventBodySerializer="%user_eventBodySerializer%"
               eventHeaderSerializer="%user_eventHeaderSerializer%"
               errorCallback="%user_errorCallback%"
                 >
+
+             <SSL> <TrustStore location="test_truststore.jks" password="%truststore_password%"/> </SSL>
 
             <PatternLayout pattern="%m"/>
         </SplunkHttp>

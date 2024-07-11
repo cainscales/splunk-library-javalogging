@@ -45,6 +45,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         //use httplogger
         List<String> msgs = new ArrayList<>();
@@ -77,6 +78,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         //use httplogger
         List<String> msgs = new ArrayList<>();
@@ -107,6 +109,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         //use httplogger
         List<String> messages = new ArrayList<>();
@@ -146,6 +149,7 @@ public final class HttpEventCollector_Log4j2Test {
         userInputs.put("user_host", "host.example.com");
         userInputs.put("user_source", "splunktest");
         userInputs.put("user_sourcetype", "battlecat");
+        userInputs.put("user_disableCertValidation", "true");
 
         org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         //use httplogger
@@ -180,6 +184,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         String jsonMsg = String.format("{EventDate:%s, EventMsg:'this is a test event for java logging}", new Date());
         Logger logger = context.getLogger(loggerName);
@@ -194,6 +199,7 @@ public final class HttpEventCollector_Log4j2Test {
         userInputs.put("user_host", "host.example.com");
         userInputs.put("user_source", "splunktest_BatchCount");
         userInputs.put("user_sourcetype", "battlecat_BatchCount");
+        userInputs.put("user_disableCertValidation", "true");
 
         context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         logger = context.getLogger(loggerName);
@@ -248,6 +254,7 @@ public final class HttpEventCollector_Log4j2Test {
         userInputs.put("user_host", "host.example.com");
         userInputs.put("user_source", "splunktest_BatchSize");
         userInputs.put("user_sourcetype", "battlecat_BatchSize");
+        userInputs.put("user_disableCertValidation", "true");
 
         LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         Logger logger = context.getLogger(loggerName);
@@ -300,6 +307,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         Logger logger = context.getLogger(loggerName);
 
@@ -369,6 +377,7 @@ public final class HttpEventCollector_Log4j2Test {
         HashMap<String, String> userInputs = new HashMap<>();
         userInputs.put("user_logger_name", loggerName);
         userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("user_disableCertValidation", "true");
         LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
         Logger logger = context.getLogger(loggerName);
 
@@ -410,6 +419,7 @@ public final class HttpEventCollector_Log4j2Test {
         userInputs.put("user_httpEventCollector_token", token);
         userInputs.put("user_index", indexName);
         userInputs.put("user_send_mode", "sequential");
+        userInputs.put("user_disableCertValidation", "true");
 
         org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
 
@@ -467,6 +477,7 @@ public final class HttpEventCollector_Log4j2Test {
         jsonObject.add("userId", new JsonPrimitive("21"));
         jsonObject.add("eventTimestamp", new JsonPrimitive(timeMillsec));
 
+
         // Test with a json event message
         jsonObject.add("severity", new JsonPrimitive("info"));
         final String infoJson = jsonObject.toString();
@@ -481,5 +492,40 @@ public final class HttpEventCollector_Log4j2Test {
 
         TestUtil.verifyEventsSentToSplunk(msgs);
         TestUtil.deleteHttpEventCollectorToken(httpEventCollectorName);
+    }
+
+    @Test
+    public void canSendEventWithCustomTruststore() throws Exception {
+        System.out.println("======================================");
+        System.out.println("Test: canSendEventWithCustomTruststore");
+        TestUtil.enableHttpEventCollector();
+        TestUtil.setHttpEventCollectorCertificate();
+        String token = TestUtil.createHttpEventCollectorToken(httpEventCollectorName);
+        String loggerName = "splunkLogger4j2";
+        HashMap<String, String> userInputs = new HashMap<>();
+        userInputs.put("user_logger_name", loggerName);
+        userInputs.put("user_httpEventCollector_token", token);
+        userInputs.put("truststore_password", "password");
+        org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
+
+
+        List<String> msgs = new ArrayList<>();
+
+        Date date = new Date();
+        String jsonMsg = String.format("{EventDate:%s, EventMsg:'this is a https test event for log4j2}", date);
+
+        Logger logger = context.getLogger(loggerName);
+        logger.info(jsonMsg);
+        msgs.add(jsonMsg);
+
+        jsonMsg = String.format("{EventDate:%s, EventMsg:'this is a https test error for log4j2}", date);
+        logger.error(jsonMsg);
+        msgs.add(jsonMsg);
+
+        TestUtil.verifyEventsSentToSplunk(msgs);
+
+        TestUtil.deleteHttpEventCollectorToken(httpEventCollectorName);
+        TestUtil.clearHttpEventCollectorCertificate();
+        System.out.println("====================== Test pass=========================");
     }
 }

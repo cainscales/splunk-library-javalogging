@@ -163,6 +163,7 @@ public class HttpEventCollector_Test {
         if (loggerType == "log4j") {
             String loggerName = "splunk.log4jInsertVerify";
             userInputs.put("user_logger_name", loggerName);
+            userInputs.put("user_disableCertValidation", "true");
             org.apache.logging.log4j.core.LoggerContext context = TestUtil.resetLog4j2Configuration("log4j2_template.xml", "log4j2.xml", userInputs);
             org.apache.logging.log4j.Logger LOG4J = context.getLogger(loggerName);
             for (int i = 0; i < expectedCounter; i++) {

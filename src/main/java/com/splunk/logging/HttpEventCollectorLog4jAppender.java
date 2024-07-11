@@ -93,6 +93,9 @@ public final class HttpEventCollectorLog4jAppender extends AbstractAppender
         metadata.put(MetadataTags.SOURCETYPE, sourcetype != null ? sourcetype : "");
         metadata.put(MetadataTags.MESSAGEFORMAT, messageFormat != null ? messageFormat : "");
         HttpEventCollectorSslConfiguration httpEventCollectorSslConfiguration = null;
+        if (sslConfiguration != null && disableCertificateValidation != null && disableCertificateValidation.equalsIgnoreCase("true")) {
+            LOGGER.warn("sslConfiguration was defined with disableCertificateValidation enabled.");
+        }
         if (sslConfiguration != null) {
             try {
                 httpEventCollectorSslConfiguration = new HttpEventCollectorSslConfiguration(

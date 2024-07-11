@@ -201,6 +201,30 @@ public class TestUtil {
     }
 
     /**
+     * set to use test certificate for the http event collector.
+     */
+    public static void setHttpEventCollectorCertificate() throws Exception {
+        connectToSplunk();
+
+        Map args = new HashMap();
+        args.put("serverCert", "$SPLUNK_HOME/etc/auth/test_certificate.pem");
+        ResponseMessage response = service.post("/services/data/inputs/http/http", args);
+        assert response.getStatus() == 200;
+    }
+
+    /**
+     * set to use the default splunk server certificate for http event collector
+     */
+    public static void clearHttpEventCollectorCertificate() throws Exception {
+        connectToSplunk();
+
+        Map args = new HashMap();
+        args.put("serverCert", "$SPLUNK_HOME/etc/auth/server.pem");
+        ResponseMessage response = service.post("/services/data/inputs/http/http", args);
+        assert response.getStatus() == 200;
+    }
+
+    /**
      * delete http event collector token
      */
     public static void deleteHttpEventCollectorToken(String httpEventCollectorName) throws Exception {
@@ -526,6 +550,7 @@ public class TestUtil {
         userInputs.put("user_source", "splunktest");
         userInputs.put("user_sourcetype", sourceType);
         userInputs.put("user_messageFormat", messageFormat);
+        userInputs.put("user_disableCertValidation", "true");
         return userInputs;
     }
 }

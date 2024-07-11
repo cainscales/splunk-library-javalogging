@@ -68,6 +68,8 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
+      - name: Copy Certificate
+        run: "docker cp resources/test_certificate.pem splunk:/opt/splunk/etc/auth/"
       - name: Acceptance Test
         run: mvn -P AcceptanceTest -B verify --file pom.xml
         env:
