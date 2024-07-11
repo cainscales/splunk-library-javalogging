@@ -207,7 +207,7 @@ public class TestUtil {
         connectToSplunk();
 
         Map args = new HashMap();
-        args.put("serverCert", "$SPLUNK_HOME/etc/auth/test_certificate.pem");
+        args.put("serverCert", "/usr/local/test/test_certificate.pem");
         ResponseMessage response = service.post("/services/data/inputs/http/http", args);
         assert response.getStatus() == 200;
     }

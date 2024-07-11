@@ -47,6 +47,7 @@ jobs:
         env:
           SPLUNK_START_ARGS: --accept-license
           SPLUNK_PASSWORD: changed!
+        options: --name splunk
         ports:
           - 8089
           - 8088
@@ -54,6 +55,8 @@ jobs:
           - 15000
           - 10667
           - 10668/udp
+        volumes:
+          - ${{ github.workspace }}/resources:/usr/local/test
 
     steps:
       - uses: actions/checkout@v2
@@ -68,8 +71,12 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
             ${{ runner.os }}-maven-
-      - name: Copy Certificate
-        run: "docker cp resources/test_certificate.pem splunk:/opt/splunk/etc/auth/"
+      - name: Restart Splunk with Volume Mounted
+        uses: docker://docker
+        with:
+          args: docker restart splunk
+      - name: Wait for Splunk Restart
+        run: sleep 30
       - name: Acceptance Test
         run: mvn -P AcceptanceTest -B verify --file pom.xml
         env:
